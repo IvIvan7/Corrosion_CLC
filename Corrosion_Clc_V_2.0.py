@@ -19,7 +19,7 @@ post_frame.place(width=400, height=400, x=400, y=0)
 
 #Функция расчета возраста тоннеля
 
-def calc_age (event):
+def calc_age():
     bld_year = int(float(age_entry.get()))
     from datetime import date
     today = date.today()
@@ -80,14 +80,18 @@ def proc_out(event):
 def on_outcomb_selected(event):
     selected_value_outs = outside_combox.get()
     if selected_value_outs == 'Почва (ρ=200…1000 Ом*см)':
+        result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
         cond_outs_ent.config(state='normal')
         cond_outs_ent.focus()
         cond_outs_ent.delete(0, tk.END)
     elif selected_value_outs == 'Почва (ρ=1000…2000 Ом*см)':
+        result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
         cond_outs_ent.config(state='normal')
         cond_outs_ent.focus()
         cond_outs_ent.delete(0, tk.END)
-    result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
+    else:
+        result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
+
 
 #Интерфейс выпадающего списка внешней среды
 outside_combox_lbl = tk.Label(ini_frame, text='Определите внешнюю среду:')
@@ -136,14 +140,17 @@ def proc_ins(event):
 def on_inscomb_selected(event):
     selected_value_ins = inside_combox.get()
     if selected_value_ins == 'Почва (ρ=200…1000 Ом*см)':
+        result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
         cond_ins_ent.config(state='normal')
         cond_ins_ent.focus()
         cond_ins_ent.delete(0, tk.END)
     elif selected_value_ins == 'Почва (ρ=1000…2000 Ом*см)':
+        result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
         cond_ins_ent.config(state='normal')
         cond_ins_ent.focus()
         cond_ins_ent.delete(0, tk.END)
-    result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
+    else:
+        result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
 
 
 # Интерфейс выпадающего списка внешней среды
@@ -163,7 +170,7 @@ inside_combox.bind('<<ComboboxSelected>>', on_inscomb_selected)
 
 # Расчет геометрических параметров
 
-def Clc_t_and_s_value(event):
+def Clc_t_and_s_value():
     H = float(H_ent.get())
     result_H_lbl.config(text=f'Высота блока H: {round(H ,2)} мм')
     B = float(B_ent.get())
@@ -187,6 +194,24 @@ def Clc_t_and_s_value(event):
     result_t_lbl.config(text=f'Толщина ребра блока t: {round(t ,2)} мм')
     result_s_lbl.config(text=f'Толщина спинки блока s: {round(s ,2)} мм')
     result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см^4')
+    return s, t
+
+def clc_new_geom():
+    H = float(H_ent.get())
+    B = float(B_ent.get())
+    s, t = Clc_t_and_s_value()
+    value_outs = outside_the_lining[outside_combox.get()]
+    losses_outside = calc_age(event) * value_outs
+    value_ins = inside_the_lining[inside_combox.get()]
+    losses_inside = calc_age(event) * value_ins
+    Hn = H - losses_outside - losses_inside
+    Bn = B
+    tn = t - losses_inside
+    sn = s - losses_inside
+    # Расчет расстояний до центра тяжести от левого и правого края сечения
+    x1n = ((2 * tn * Hn ** 2) + ((Bn - 2 * tn) * sn ** 2)) / (2 * ((2 * tn * Hn) + (Bn - 2 * tn) * sn))
+    x2n = Hn - x1n
+    Jxn = (((Bn * (x1n ** 3)) - ((Bn - 2 * tn) * ((x1n - sn) ** 3)) + (2 * tn * (x2n ** 3))) / 3) / 10000
 
 geom_title_lbl = tk.Label(ini_frame, text='Введите геометрические параметры блока:')
 geom_title_lbl.grid(row=5, column=0, sticky='w', columnspan=2)
@@ -223,6 +248,8 @@ result_s_lbl = tk.Label(post_frame, text='')
 result_s_lbl.grid(row=8, column=0, sticky='w')
 result_Jx_lbl = tk.Label(post_frame, text='')
 result_Jx_lbl.grid(row=9, column=0, sticky='w')
+but_clc = tk.Button(post_frame,text='clc', command=clc_new_geom)
+but_clc.grid(row=12, column=0, sticky='w')
 
 
 
