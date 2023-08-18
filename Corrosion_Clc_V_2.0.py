@@ -6,7 +6,7 @@ import tkinter.ttk as ttk
 root = tk.Tk()
 root['bg'] = '#fafafa'
 root.title('Расчет геометрических параметров тюбингов с коррозией')
-root.geometry('700x400+400+200')
+root.geometry('800x400+400+200')
 root.iconbitmap(default='Ico_2.ico')
 root.resizable(False, False)
 
@@ -15,7 +15,7 @@ root.resizable(False, False)
 ini_frame = tk.LabelFrame(master=root, relief='ridge',bd=2, pady=10, padx=3, text='Исходные данные')
 ini_frame.place(width=400, height=400, x=0, y=0)
 post_frame = tk.LabelFrame(master=root, relief='ridge', bd=2, pady=10, padx=3, text='Результаты расчета')
-post_frame.place(width=300, height=400, x=400, y=0)
+post_frame.place(width=400, height=400, x=400, y=0)
 
 #Функция расчета возраста тоннеля
 
@@ -32,7 +32,7 @@ def calc_age (event):
         k =  ' лет'
     else:
         k =  ' года'
-    age_res_val['text'] = str(age) + k
+    age_res_lbl.config(text=f'Возраст тоннеля: {age} {k}')
     return age
 
 #Интерфейс расчета возраста тоннеля
@@ -46,8 +46,6 @@ age_entry.bind('<FocusOut>', calc_age)
 age_entry.bind('<Return>', calc_age)
 age_res_lbl = tk.Label(post_frame, text='Возраст тоннеля:')
 age_res_lbl.grid(row = 0, column = 0, sticky='w')
-age_res_val = tk.Label(post_frame, text='')
-age_res_val.grid(row = 0, column = 1, sticky='w')
 
 
 #Ввод данных о среде расположения тоннеля
@@ -68,7 +66,7 @@ outside_keys_list = list(outside_the_lining.keys())
 
 def on_outcomb_selected(event):
     selected_value = outside_combox.get()
-    result_label_outs.config(text=f'Внешняя среда: {selected_value}')
+    result_label_outs.config(text=f'Внешняя среда: {selected_value} | {outside_the_lining[selected_value]} мм/год')
     #if selected_value in outside_the_lining:
        # outside_the_lining[selected_value] = value
         #print(value)
