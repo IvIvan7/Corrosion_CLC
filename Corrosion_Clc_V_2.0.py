@@ -57,15 +57,35 @@ outside_the_lining = {
         'Атмосфера, обогащенная SO2': 0.79,
         'Вода морская, спокойная': 0.125,
         'Вода морская (скорость течения 6-10 м/с)': 1.25,
-        'Почва (ρ=200…1000 Ом*см)': 1,
-        'Почва (ρ=1000…2000 Ом*см)': 1
+        'Почва (ρ=200…1000 Ом*см)': 0.06,
+        'Почва (ρ=1000…2000 Ом*см)': 0.03
     }
 
 outside_keys_list = list(outside_the_lining.keys())
 
 
+def proc1(event):
+    selected_value = outside_combox.get()
+    cond = int(float(cond_ent.get()))
+    if selected_value == 'Почва (ρ=200…1000 Ом*см)':
+        m = 0.13 + ((0.06 - 0.13) / (200 - 1000)) * (cond - 1000)
+        outside_the_lining[selected_value] = m
+        result_label_outs.config(text=f'Внешняя среда: {selected_value} | {outside_the_lining[selected_value]} мм/год')
+    else:
+        n = 0.13 + ((0.06 - 0.03) / (1000 - 2000)) * (cond - 2000)
+        outside_the_lining[selected_value] = n
+        result_label_outs.config(text=f'Внешняя среда: {selected_value} | {outside_the_lining[selected_value]} мм/год')
+
 def on_outcomb_selected(event):
     selected_value = outside_combox.get()
+    if selected_value == 'Почва (ρ=200…1000 Ом*см)':
+        cond_ent.config(state='normal')
+        cond_ent.focus()
+        cond_ent.delete(0, tk.END)
+    elif selected_value == 'Почва (ρ=1000…2000 Ом*см)':
+        cond_ent.config(state='normal')
+        cond_ent.focus()
+        cond_ent.delete(0, tk.END)
     result_label_outs.config(text=f'Внешняя среда: {selected_value} | {outside_the_lining[selected_value]} мм/год')
     #if selected_value in outside_the_lining:
        # outside_the_lining[selected_value] = value
@@ -77,9 +97,14 @@ outside_combox_lbl = tk.Label(ini_frame, text='Определите внешню
 outside_combox_lbl.grid(row = 1, column = 0, sticky='w')
 outside_combox=ttk.Combobox(ini_frame, values=outside_keys_list, width=30)
 outside_combox.grid(row = 1, column = 1, sticky='w')
-
 result_label_outs = tk.Label(post_frame, text='')
 result_label_outs.grid(row = 1, column = 0, sticky='w')
+cond_lbl = tk.Label(ini_frame, text='Введите значение \n электропроводности:')
+cond_lbl.grid(row = 2, column = 0, sticky='w')
+cond_ent = tk.Entry(ini_frame, width=10, bg="white", state='disabled')
+cond_ent.grid(row = 2, column = 1, sticky='w')
+cond_ent.bind('<Return>', proc1)
+cond_ent.bind('<FocusOut>', proc1)
 
 outside_combox.bind('<<ComboboxSelected>>', on_outcomb_selected)
 
