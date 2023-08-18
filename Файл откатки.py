@@ -1,19 +1,35 @@
-import tkinter as tk
-from tkinter import ttk
+def clc():
+    H = 200
+    B = 1000
+    t = 20
+    s = 10
+    n=0
+    Jx_ult = 7000
+    x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
 
-def on_combobox_selected(event):
-    selected_value = combobox.get()
-    result_label.config(text=f"Selected value: {selected_value}")
+    x2 = H - x1
 
-root = tk.Tk()
-root.title("Combobox Example")
+    Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
 
-combobox = ttk.Combobox(root, values=["Option 1", "Option 2", "Option 3"])
-combobox.pack()
+    # Проверка совпадения значений моментов инерции
+    Chek = (Jx == Jx_ult)
+    # Цикл подбора толщин по исходному моменту инерции
+    while Chek == False:
+        t = t + 0.0000001
 
-result_label = tk.Label(root, text="")
-result_label.pack()
+        s = s + 0.0000001
 
-combobox.bind("<<ComboboxSelected>>", on_combobox_selected)
+        x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
 
-root.mainloop()
+        x2 = H - x1
+
+        Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
+
+        n= n+1
+
+
+
+        Chek = (Jx >= Jx_ult)
+    print(Jx)
+    print(n)
+clc()

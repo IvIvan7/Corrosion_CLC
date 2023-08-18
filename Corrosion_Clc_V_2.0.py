@@ -105,7 +105,7 @@ cond_outs_ent.bind('<FocusOut>', proc_out)
 outside_combox.bind('<<ComboboxSelected>>', on_outcomb_selected)
 
 
-# Внутренняя
+# Внутренняя среда
 
 #Перечень исходных параметров из таблиц для расчёта
 inside_the_lining = {
@@ -161,7 +161,68 @@ cond_ins_ent.bind('<Return>', proc_ins)
 cond_ins_ent.bind('<FocusOut>', proc_ins)
 inside_combox.bind('<<ComboboxSelected>>', on_inscomb_selected)
 
+# Расчет геометрических параметров
 
+def Clc_t_and_s_value(event):
+    H = float(H_ent.get())
+    result_H_lbl.config(text=f'Высота блока H: {round(H ,2)} мм')
+    B = float(B_ent.get())
+    result_B_lbl.config(text=f'Ширина блока B: {round(B ,2)} мм')
+    t = float(t_ent.get())
+    s = float(s_ent.get())
+    Jx_ult = float(Jx_ent.get())
+    x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
+    x2 = H - x1
+    Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
+    # Проверка совпадения значений моментов инерции
+    Chek = (Jx == Jx_ult)
+    # Цикл подбора толщин по исходному моменту инерции
+    while Chek == False:
+        t = t + 0.0000001
+        s = s + 0.0000001
+        x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
+        x2 = H - x1
+        Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
+        Chek = (Jx >= Jx_ult)
+    result_t_lbl.config(text=f'Толщина ребра блока t: {round(t ,2)} мм')
+    result_s_lbl.config(text=f'Толщина спинки блока s: {round(s ,2)} мм')
+    result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см^4')
+
+geom_title_lbl = tk.Label(ini_frame, text='Введите геометрические параметры блока:')
+geom_title_lbl.grid(row=5, column=0, sticky='w', columnspan=2)
+H_lbl = tk.Label(ini_frame, text='Высота блока H (мм):')
+H_lbl.grid(row=6, column=0, sticky='w')
+B_lbl = tk.Label(ini_frame, text='Ширина блока B (мм):')
+B_lbl.grid(row=7, column=0, sticky='w')
+t_lbl = tk.Label(ini_frame, text='Толщина ребра блока t (мм):')
+t_lbl.grid(row=8, column=0, sticky='w')
+s_lbl = tk.Label(ini_frame, text='Толщина спинки блока s (мм):')
+s_lbl.grid(row=9, column=0, sticky='w')
+Jx_lbl = tk.Label(ini_frame, text='Момент инерции блока (см^4):')
+Jx_lbl.grid(row=10, column=0, sticky='w')
+H_ent = tk.Entry(ini_frame, width=10, bg="white")
+H_ent.grid(row=6, column=1, sticky='w')
+B_ent = tk.Entry(ini_frame, width=10, bg="white")
+B_ent.grid(row=7, column=1, sticky='w')
+t_ent = tk.Entry(ini_frame, width=10, bg="white")
+t_ent.grid(row=8, column=1, sticky='w')
+s_ent = tk.Entry(ini_frame, width=10, bg="white")
+s_ent.grid(row=9, column=1, sticky='w')
+Jx_ent = tk.Entry(ini_frame, width=10, bg="white")
+Jx_ent.grid(row=10, column=1, sticky='w')
+Jx_ent.bind('<Return>', Clc_t_and_s_value)
+result_geom_lbl = tk.Label(post_frame, text='Геометрические параметры блока обделки:')
+result_geom_lbl.grid(row=4, column=0, sticky='w', columnspan=2)
+result_H_lbl = tk.Label(post_frame, text='')
+result_H_lbl.grid(row=5, column=0, sticky='w')
+result_B_lbl = tk.Label(post_frame, text='')
+result_B_lbl.grid(row=6, column=0, sticky='w')
+result_t_lbl = tk.Label(post_frame, text='')
+result_t_lbl.grid(row=7, column=0, sticky='w')
+result_s_lbl = tk.Label(post_frame, text='')
+result_s_lbl.grid(row=8, column=0, sticky='w')
+result_Jx_lbl = tk.Label(post_frame, text='')
+result_Jx_lbl.grid(row=9, column=0, sticky='w')
 
 
 

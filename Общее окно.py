@@ -1,32 +1,41 @@
 import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
+import threading
+import time
 
-#Создание рабочего окна приложения
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Изменяющийся ProgressBar")
+
+        self.progressbar = ttk.Progressbar(self.root, orient="horizontal", length=300, mode="determinate")
+        self.progressbar.pack(pady=20)
+
+        self.start_button = tk.Button(self.root, text="Начать", command=self.start_progress)
+        self.start_button.pack()
+
+        self.stop_button = tk.Button(self.root, text="Остановить", command=self.stop_progress)
+        self.stop_button.pack()
+
+        self.running = False
+        self.value = 0
+        self.progress_thread = None
+
+    def update_progress(self):
+        while self.running and self.value < 100:
+            self.value += 1
+            self.progressbar["value"] = self.value
+            time.sleep(0.1)
+
+    def start_progress(self):
+        if not self.running:
+            self.running = True
+            self.progress_thread = threading.Thread(target=self.update_progress)
+            self.progress_thread.start()
+
+    def stop_progress(self):
+        self.running = False
 
 root = tk.Tk()
-root['bg'] = '#fafafa'
-root.title('Расчет геометрических параметров тюбингов с коррозией')
-root.geometry('600x400')
-root.resizable(False, False)
-
-#Рамки с исходными данными и результатами
-
-ini_frame = tk.Frame(master=root, relief='ridge',bd=2)
-ini_frame.pack(fill='y', side='left')
-post_frame = tk.Frame(master=root, relief='ridge', bd=2)
-post_frame.pack(fill='y', side='right')
-
-
-
-#Интерфейс расчета возраста тоннеля
-
-age_lbl = tk.Label(master=ini_frame, text='Введите год постройки тоннеля:')
-age_lbl.pack()
-age_lbl1 = tk.Label(master=ini_frame, text='Введите год постройки тоннеля:')
-age_lbl1.pack()
-age_lbl2 = tk.Label(master=post_frame, text='Введите год постройки тоннеля:')
-age_lbl2.pack()
-age_lbl3 = tk.Label(master=post_frame, text='Введите год постройки тоннеля:')
-age_lbl3.pack()
-
+app = App(root)
 root.mainloop()
