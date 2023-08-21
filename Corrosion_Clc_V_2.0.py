@@ -19,7 +19,7 @@ post_frame.place(width=400, height=400, x=400, y=0)
 
 #Функция расчета возраста тоннеля
 
-def calc_age():
+def calc_age(event):
     bld_year = int(float(age_entry.get()))
     from datetime import date
     today = date.today()
@@ -170,7 +170,7 @@ inside_combox.bind('<<ComboboxSelected>>', on_inscomb_selected)
 
 # Расчет геометрических параметров
 
-def Clc_t_and_s_value():
+def Clc_t_and_s_value(event):
     H = float(H_ent.get())
     result_H_lbl.config(text=f'Высота блока H: {round(H ,2)} мм')
     B = float(B_ent.get())
@@ -196,10 +196,10 @@ def Clc_t_and_s_value():
     result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см^4')
     return s, t
 
-def clc_new_geom():
+def clc_new_geom(event):
     H = float(H_ent.get())
     B = float(B_ent.get())
-    s, t = Clc_t_and_s_value()
+    s, t = Clc_t_and_s_value(event)
     value_outs = outside_the_lining[outside_combox.get()]
     losses_outside = calc_age(event) * value_outs
     value_ins = inside_the_lining[inside_combox.get()]
@@ -211,7 +211,19 @@ def clc_new_geom():
     # Расчет расстояний до центра тяжести от левого и правого края сечения
     x1n = ((2 * tn * Hn ** 2) + ((Bn - 2 * tn) * sn ** 2)) / (2 * ((2 * tn * Hn) + (Bn - 2 * tn) * sn))
     x2n = Hn - x1n
+    # Расчет нового момента инерции
     Jxn = (((Bn * (x1n ** 3)) - ((Bn - 2 * tn) * ((x1n - sn) ** 3)) + (2 * tn * (x2n ** 3))) / 3) / 10000
+    result_Jxn_lbl.config(text=f'Момент инерции ржавого блока: {round(Jxn, 2)} мм')
+    # Расчет моментов сопротивления
+    Wminn = Jxn / (x2n / 10)
+    Wmaxn = Jxn / (x1n / 10)
+    result_Wmin_lbl.config(text=f'Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} мм')
+    result_Wmax_lbl.config(text=f'Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} мм')
+    Fn = (Bn * sn + 2 * ((Hn - sn) * tn)) / 100
+    result_Fn_lbl.config(text=f'Площадь поперечного сечения ржавого блока: {round(Fn, 2)} мм')
+
+def start_clc():
+    clc_new_geom(0)
 
 geom_title_lbl = tk.Label(ini_frame, text='Введите геометрические параметры блока:')
 geom_title_lbl.grid(row=5, column=0, sticky='w', columnspan=2)
@@ -248,9 +260,15 @@ result_s_lbl = tk.Label(post_frame, text='')
 result_s_lbl.grid(row=8, column=0, sticky='w')
 result_Jx_lbl = tk.Label(post_frame, text='')
 result_Jx_lbl.grid(row=9, column=0, sticky='w')
-but_clc = tk.Button(post_frame,text='clc', command=clc_new_geom)
-but_clc.grid(row=12, column=0, sticky='w')
-
-
+result_Jxn_lbl = tk.Label(post_frame, text='')
+result_Jxn_lbl.grid(row=10, column=0, sticky='w')
+result_Wmax_lbl = tk.Label(post_frame, text='')
+result_Wmax_lbl.grid(row=11, column=0, sticky='w')
+result_Wmin_lbl = tk.Label(post_frame, text='')
+result_Wmin_lbl.grid(row=12, column=0, sticky='w')
+result_Fn_lbl = tk.Label(post_frame, text='')
+result_Fn_lbl.grid(row=13, column=0, sticky='w')
+clc_but = tk.Button(post_frame, text='clc', command=start_clc)
+clc_but.grid(row=20, column=0, sticky='w')
 
 root.mainloop()
