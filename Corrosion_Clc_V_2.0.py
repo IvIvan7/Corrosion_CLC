@@ -1,6 +1,9 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import re
 
+def on_validate_input(P):
+    return re.match(r'^\d*\.?\d*$', P) is not None
 #Создание рабочего окна приложения
 
 root = tk.Tk()
@@ -9,6 +12,7 @@ root.title('Расчет геометрических параметров тю�
 root.geometry('800x400+400+200')
 root.iconbitmap(default='Ico_2.ico')
 root.resizable(False, False)
+validate_input = root.register(on_validate_input)
 
 #Рамки с исходными данными и результатами
 
@@ -39,7 +43,7 @@ def calc_age(event):
 
 age_lbl = tk.Label(ini_frame, text='Введите год постройки тоннеля:')
 age_lbl.grid(row = 0, column = 0, sticky='w')
-age_entry = tk.Entry(ini_frame, width=10, bg="white")
+age_entry = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 age_entry.grid(row = 0, column = 1, sticky='w', pady=5)
 age_entry.focus()
 age_entry.bind('<FocusOut>', calc_age)
@@ -70,21 +74,23 @@ def proc_out(event):
     cond_outs = int(float(cond_outs_ent.get()))
     if selected_value_outs == 'Почва (ρ=200…1000 Ом*см)':
         m = 0.13 + ((0.06 - 0.13) / (200 - 1000)) * (cond_outs - 1000)
-        outside_the_lining[selected_value_outs] = m
+        outside_the_lining[selected_value_outs] = round(m ,4)
         result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
     else:
         n = 0.13 + ((0.06 - 0.03) / (1000 - 2000)) * (cond_outs - 2000)
-        outside_the_lining[selected_value_outs] = n
+        outside_the_lining[selected_value_outs] = round(n ,4)
         result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
 
 def on_outcomb_selected(event):
     selected_value_outs = outside_combox.get()
     if selected_value_outs == 'Почва (ρ=200…1000 Ом*см)':
+        outside_the_lining[selected_value_outs] = 0.06
         result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
         cond_outs_ent.config(state='normal')
         cond_outs_ent.focus()
         cond_outs_ent.delete(0, tk.END)
     elif selected_value_outs == 'Почва (ρ=1000…2000 Ом*см)':
+        outside_the_lining[selected_value_outs] = 0.03
         result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
         cond_outs_ent.config(state='normal')
         cond_outs_ent.focus()
@@ -102,7 +108,7 @@ result_label_outs = tk.Label(post_frame, text='')
 result_label_outs.grid(row = 1, column = 0, sticky='w')
 cond_outs_lbl = tk.Label(ini_frame, text='Введите значение \n электропроводности:')
 cond_outs_lbl.grid(row = 2, column = 0, sticky='w')
-cond_outs_ent = tk.Entry(ini_frame, width=10, bg="white", state='disabled')
+cond_outs_ent = tk.Entry(ini_frame, width=10, bg="white", state='disabled', validate="key", validatecommand=(validate_input, "%P"))
 cond_outs_ent.grid(row = 2, column = 1, sticky='w')
 cond_outs_ent.bind('<Return>', proc_out)
 cond_outs_ent.bind('<FocusOut>', proc_out)
@@ -129,22 +135,24 @@ def proc_ins(event):
     cond_ins = int(float(cond_ins_ent.get()))
     if selected_value_ins == 'Почва (ρ=200…1000 Ом*см)':
         x = 0.13 + ((0.06 - 0.13) / (200 - 1000)) * (cond_ins - 1000)
-        inside_the_lining[selected_value_ins] = x
+        inside_the_lining[selected_value_ins] = round(x ,4)
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {inside_the_lining[selected_value_ins]} мм/год')
     else:
         y = 0.13 + ((0.06 - 0.03) / (1000 - 2000)) * (cond_ins - 2000)
-        inside_the_lining[selected_value_ins] = y
+        inside_the_lining[selected_value_ins] = round(y ,4)
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {inside_the_lining[selected_value_ins]} мм/год')
 
 
 def on_inscomb_selected(event):
     selected_value_ins = inside_combox.get()
     if selected_value_ins == 'Почва (ρ=200…1000 Ом*см)':
+        inside_the_lining[selected_value_ins] = 0.06
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
         cond_ins_ent.config(state='normal')
         cond_ins_ent.focus()
         cond_ins_ent.delete(0, tk.END)
     elif selected_value_ins == 'Почва (ρ=1000…2000 Ом*см)':
+        inside_the_lining[selected_value_ins] = 0.03
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
         cond_ins_ent.config(state='normal')
         cond_ins_ent.focus()
@@ -162,7 +170,7 @@ result_label_ins = tk.Label(post_frame, text='')
 result_label_ins.grid(row=3, column=0, sticky='w')
 cond_ins_lbl = tk.Label(ini_frame, text='Введите значение \n электропроводности:')
 cond_ins_lbl.grid(row=4, column=0, sticky='w')
-cond_ins_ent = tk.Entry(ini_frame, width=10, bg="white", state='disabled')
+cond_ins_ent = tk.Entry(ini_frame, width=10, bg="white", state='disabled', validate="key", validatecommand=(validate_input, "%P"))
 cond_ins_ent.grid(row=4, column=1, sticky='w')
 cond_ins_ent.bind('<Return>', proc_ins)
 cond_ins_ent.bind('<FocusOut>', proc_ins)
@@ -237,15 +245,15 @@ s_lbl = tk.Label(ini_frame, text='Толщина спинки блока s (мм
 s_lbl.grid(row=9, column=0, sticky='w')
 Jx_lbl = tk.Label(ini_frame, text='Момент инерции блока (см^4):')
 Jx_lbl.grid(row=10, column=0, sticky='w')
-H_ent = tk.Entry(ini_frame, width=10, bg="white")
+H_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 H_ent.grid(row=6, column=1, sticky='w')
-B_ent = tk.Entry(ini_frame, width=10, bg="white")
+B_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 B_ent.grid(row=7, column=1, sticky='w')
-t_ent = tk.Entry(ini_frame, width=10, bg="white")
+t_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 t_ent.grid(row=8, column=1, sticky='w')
-s_ent = tk.Entry(ini_frame, width=10, bg="white")
+s_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 s_ent.grid(row=9, column=1, sticky='w')
-Jx_ent = tk.Entry(ini_frame, width=10, bg="white")
+Jx_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 Jx_ent.grid(row=10, column=1, sticky='w')
 Jx_ent.bind('<Return>', Clc_t_and_s_value)
 result_geom_lbl = tk.Label(post_frame, text='Геометрические параметры блока обделки:')

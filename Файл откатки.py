@@ -1,35 +1,17 @@
-def clc():
-    H = 200
-    B = 1000
-    t = 20
-    s = 10
-    n=0
-    Jx_ult = 7000
-    x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
+import tkinter as tk
 
-    x2 = H - x1
+def on_validate_input(P):
+    if P == "" or P.isdigit():
+        return True
+    else:
+        return False
 
-    Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
+root = tk.Tk()
+root.title("Only Digits Entry")
 
-    # Проверка совпадения значений моментов инерции
-    Chek = (Jx == Jx_ult)
-    # Цикл подбора толщин по исходному моменту инерции
-    while Chek == False:
-        t = t + 0.0000001
+validate_input = root.register(on_validate_input)
 
-        s = s + 0.0000001
+entry = tk.Entry(root, validate="key", validatecommand=(validate_input, "%P"))
+entry.pack(padx=20, pady=20)
 
-        x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
-
-        x2 = H - x1
-
-        Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
-
-        n= n+1
-
-
-
-        Chek = (Jx >= Jx_ult)
-    print(Jx)
-    print(n)
-clc()
+root.mainloop()
