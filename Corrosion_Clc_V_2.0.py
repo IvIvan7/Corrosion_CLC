@@ -3,9 +3,11 @@ import tkinter.ttk as ttk
 import re
 from tkinter import messagebox
 
+#Функция запрета ввода слов в поля
 def on_validate_input(P):
     return re.match(r'^\d*\.?\d*$', P) is not None
 
+#Функция очистки рабочего пространства
 def clear_entries(entries, labeles, comboboxes):
     for entry in entries:
         entry.delete(0, tk.END)
@@ -14,6 +16,11 @@ def clear_entries(entries, labeles, comboboxes):
     for combobox in comboboxes:
         combobox.set('')
 
+def clear_post(labels):
+    for label in labels:
+        label.config(text="")
+
+#Функция ошибки пустых полей
 def check_entries_filled(ini_entries):
     for ini_entry in ini_entries:
         if len(ini_entry.get()) == 0:
@@ -212,6 +219,7 @@ def Clc_t_and_s_value(event):
     n = 0
     while Chek == False:
         if n == 10000000:
+            clear_post([result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl])
             messagebox.showerror("Ошибка", "Проверьте правильность исходных данных")
             break
         else:
@@ -226,10 +234,16 @@ def Clc_t_and_s_value(event):
         Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
         n= n+1
         Chek = (round(Jx, 4) == Jx_ult)
-    result_t_lbl.config(text=f'Толщина ребра блока t: {round(t ,2)} мм')
-    result_s_lbl.config(text=f'Толщина спинки блока s: {round(s ,2)} мм')
-    result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см^4')
-    return s, t
+    if n == 10000000:
+        clear_post(
+            [result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl,
+             result_Wmax_lbl, result_Fn_lbl])
+    else:
+        result_t_lbl.config(text=f'Толщина ребра блока t: {round(t ,2)} мм')
+        result_s_lbl.config(text=f'Толщина спинки блока s: {round(s ,2)} мм')
+        result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см^4')
+        return s, t
+
 
 def clc_new_geom(event):
     H = float(H_ent.get())
@@ -287,8 +301,6 @@ s_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecomman
 s_ent.grid(row=9, column=1, sticky='w')
 Jx_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 Jx_ent.grid(row=10, column=1, sticky='w')
-Jx_ent.bind('<Return>', Clc_t_and_s_value)
-Jx_ent.bind('<FocusOut>', Clc_t_and_s_value)
 result_geom_lbl = tk.Label(post_frame, text='Геометрические параметры блока обделки:')
 result_geom_lbl.grid(row=4, column=0, sticky='w', columnspan=2)
 result_H_lbl = tk.Label(post_frame, text='')
@@ -313,10 +325,13 @@ result_Fn_lbl.grid(row=13, column=0, sticky='w')
 
 #Кнопки
 clc_but = tk.Button(ini_frame, text='Расчет', command=submit_form, bg= '#76EE00')
-clc_but.grid(row=14, column=0, sticky='w',pady=50, padx=5)
+clc_but.grid(row=14, column=0, sticky='w',pady=40, padx=5)
 clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent],
                                                                                         [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins],
                                                                                         [outside_combox, inside_combox]), bg= 'Coral1')
-clear_button.grid(row=14, column=0, sticky='w',pady=50, padx=60)
+clear_button.grid(row=14, column=0, sticky='w',pady=40, padx=60)
+pb = ttk.Progressbar(ini_frame, length=150)
+pb.grid(row=14, column=1, sticky='w')
+
 
 root.mainloop()
