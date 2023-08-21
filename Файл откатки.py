@@ -1,37 +1,30 @@
-import tkinter as tk
-from tkinter import messagebox
+H = 200
+B = 1000
+t = 20
+s = 10
+Jx_ult = 6700
 
-def check_entries_filled(entries):
-    for entry in entries:
-        if len(entry.get()) == 0:
-            messagebox.showerror("Ошибка", "Заполните все поля Entry")
-            return False
-    return True
-
-def submit_form():
-    if check_entries_filled(entry_list):
-        # Делайте здесь что-то, когда все поля заполнены
-        pass
-
-# Создание окна
-root = tk.Tk()
-root.title("Проверка полей Entry")
-
-# Создание Entry
-entry1 = tk.Entry(root)
-entry2 = tk.Entry(root)
-entry3 = tk.Entry(root)
-
-entry_list = [entry1, entry2, entry3]
-
-# Создание кнопки
-submit_button = tk.Button(root, text="Отправить", command=submit_form)
-
-# Размещение элементов в окне
-entry1.pack()
-entry2.pack()
-entry3.pack()
-submit_button.pack()
-
-# Запуск главного цикла
-root.mainloop()
+x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
+x2 = H - x1
+Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
+# Проверка совпадения значений моментов инерции
+Chek = (Jx == Jx_ult)
+n = 0
+# Цикл подбора толщин по исходному моменту инерции
+while Chek == False:
+    if Jx < Jx_ult:
+        t = t + 0.0000001
+        s = s + 0.0000001
+    else:
+        t = t - 0.0000001
+        s = s - 0.0000001
+    x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
+    x2 = H - x1
+    Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
+    n = n + 1
+    print(n)
+    Chek = (round(Jx, 4) == Jx_ult)
+    print(Chek)
+print(s)
+print(t)
+print(Jx)

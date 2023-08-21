@@ -6,11 +6,13 @@ from tkinter import messagebox
 def on_validate_input(P):
     return re.match(r'^\d*\.?\d*$', P) is not None
 
-def clear_entries(entries, labeles):
+def clear_entries(entries, labeles, comboboxes):
     for entry in entries:
         entry.delete(0, tk.END)
     for labele in labeles:
         labele.config(text="")
+    for combobox in comboboxes:
+        combobox.set('')
 
 def check_entries_filled(ini_entries):
     for ini_entry in ini_entries:
@@ -117,7 +119,7 @@ def on_outcomb_selected(event):
 #Интерфейс выпадающего списка внешней среды
 outside_combox_lbl = tk.Label(ini_frame, text='Определите внешнюю среду:')
 outside_combox_lbl.grid(row = 1, column = 0, sticky='w')
-outside_combox=ttk.Combobox(ini_frame, values=outside_keys_list, width=25)
+outside_combox=ttk.Combobox(ini_frame, values=outside_keys_list, width=25, state='readonly')
 outside_combox.grid(row = 1, column = 1, sticky='w')
 result_label_outs = tk.Label(post_frame, text='')
 result_label_outs.grid(row = 1, column = 0, sticky='w')
@@ -179,7 +181,7 @@ def on_inscomb_selected(event):
 # Интерфейс выпадающего списка внешней среды
 inside_combox_lbl = tk.Label(ini_frame, text='Определите внутреннюю среду:')
 inside_combox_lbl.grid(row=3, column=0, sticky='w')
-inside_combox = ttk.Combobox(ini_frame, values=outside_keys_list, width=25)
+inside_combox = ttk.Combobox(ini_frame, values=outside_keys_list, width=25, state='readonly')
 inside_combox.grid(row=3, column=1, sticky='w')
 result_label_ins = tk.Label(post_frame, text='')
 result_label_ins.grid(row=3, column=0, sticky='w')
@@ -207,13 +209,23 @@ def Clc_t_and_s_value(event):
     # Проверка совпадения значений моментов инерции
     Chek = (Jx == Jx_ult)
     # Цикл подбора толщин по исходному моменту инерции
+    n = 0
     while Chek == False:
-        t = t + 0.0000001
-        s = s + 0.0000001
+        if n == 10000000:
+            messagebox.showerror("Ошибка", "Проверьте правильность исходных данных")
+            break
+        else:
+            if Jx < Jx_ult:
+                t = t + 0.0000001
+                s = s + 0.0000001
+            else:
+                t = t - 0.0000001
+                s = s - 0.0000001
         x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
         x2 = H - x1
         Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
-        Chek = (Jx >= Jx_ult)
+        n= n+1
+        Chek = (round(Jx, 4) == Jx_ult)
     result_t_lbl.config(text=f'Толщина ребра блока t: {round(t ,2)} мм')
     result_s_lbl.config(text=f'Толщина спинки блока s: {round(s ,2)} мм')
     result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см^4')
@@ -276,6 +288,7 @@ s_ent.grid(row=9, column=1, sticky='w')
 Jx_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 Jx_ent.grid(row=10, column=1, sticky='w')
 Jx_ent.bind('<Return>', Clc_t_and_s_value)
+Jx_ent.bind('<FocusOut>', Clc_t_and_s_value)
 result_geom_lbl = tk.Label(post_frame, text='Геометрические параметры блока обделки:')
 result_geom_lbl.grid(row=4, column=0, sticky='w', columnspan=2)
 result_H_lbl = tk.Label(post_frame, text='')
@@ -302,7 +315,8 @@ result_Fn_lbl.grid(row=13, column=0, sticky='w')
 clc_but = tk.Button(ini_frame, text='Расчет', command=submit_form, bg= '#76EE00')
 clc_but.grid(row=14, column=0, sticky='w',pady=50, padx=5)
 clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent],
-                                                                                        [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins]), bg= 'Coral1')
+                                                                                        [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins],
+                                                                                        [outside_combox, inside_combox]), bg= 'Coral1')
 clear_button.grid(row=14, column=0, sticky='w',pady=50, padx=60)
 
 root.mainloop()
