@@ -1,9 +1,24 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import re
+from tkinter import messagebox
 
 def on_validate_input(P):
     return re.match(r'^\d*\.?\d*$', P) is not None
+
+def clear_entries(entries, labeles):
+    for entry in entries:
+        entry.delete(0, tk.END)
+    for labele in labeles:
+        labele.config(text="")
+
+def check_entries_filled(ini_entries):
+    for ini_entry in ini_entries:
+        if len(ini_entry.get()) == 0:
+            messagebox.showerror("Ошибка", "Заполните все поля")
+            return False
+    return True
+
 #Создание рабочего окна приложения
 
 root = tk.Tk()
@@ -102,7 +117,7 @@ def on_outcomb_selected(event):
 #Интерфейс выпадающего списка внешней среды
 outside_combox_lbl = tk.Label(ini_frame, text='Определите внешнюю среду:')
 outside_combox_lbl.grid(row = 1, column = 0, sticky='w')
-outside_combox=ttk.Combobox(ini_frame, values=outside_keys_list, width=30)
+outside_combox=ttk.Combobox(ini_frame, values=outside_keys_list, width=25)
 outside_combox.grid(row = 1, column = 1, sticky='w')
 result_label_outs = tk.Label(post_frame, text='')
 result_label_outs.grid(row = 1, column = 0, sticky='w')
@@ -164,7 +179,7 @@ def on_inscomb_selected(event):
 # Интерфейс выпадающего списка внешней среды
 inside_combox_lbl = tk.Label(ini_frame, text='Определите внутреннюю среду:')
 inside_combox_lbl.grid(row=3, column=0, sticky='w')
-inside_combox = ttk.Combobox(ini_frame, values=outside_keys_list, width=30)
+inside_combox = ttk.Combobox(ini_frame, values=outside_keys_list, width=25)
 inside_combox.grid(row=3, column=1, sticky='w')
 result_label_ins = tk.Label(post_frame, text='')
 result_label_ins.grid(row=3, column=0, sticky='w')
@@ -230,8 +245,13 @@ def clc_new_geom(event):
     Fn = (Bn * sn + 2 * ((Hn - sn) * tn)) / 100
     result_Fn_lbl.config(text=f'Площадь поперечного сечения ржавого блока: {round(Fn, 2)} мм')
 
-def start_clc():
-    clc_new_geom(0)
+
+def submit_form():
+    entry_list = [age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent, inside_combox, outside_combox]
+    if check_entries_filled(entry_list):
+        clc_new_geom(0)
+        pass
+
 
 geom_title_lbl = tk.Label(ini_frame, text='Введите геометрические параметры блока:')
 geom_title_lbl.grid(row=5, column=0, sticky='w', columnspan=2)
@@ -276,7 +296,13 @@ result_Wmin_lbl = tk.Label(post_frame, text='')
 result_Wmin_lbl.grid(row=12, column=0, sticky='w')
 result_Fn_lbl = tk.Label(post_frame, text='')
 result_Fn_lbl.grid(row=13, column=0, sticky='w')
-clc_but = tk.Button(post_frame, text='clc', command=start_clc)
-clc_but.grid(row=20, column=0, sticky='w')
+
+
+#Кнопки
+clc_but = tk.Button(ini_frame, text='Расчет', command=submit_form, bg= '#76EE00')
+clc_but.grid(row=14, column=0, sticky='w',pady=50, padx=5)
+clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent],
+                                                                                        [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins]), bg= 'Coral1')
+clear_button.grid(row=14, column=0, sticky='w',pady=50, padx=60)
 
 root.mainloop()
