@@ -2,6 +2,13 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import re
 from tkinter import messagebox
+from tkinter import PhotoImage
+import os
+from PIL import Image, ImageTk
+
+#Функция завершающая программу
+def quit_mainloop():
+    root.quit()
 
 #Функция запрета ввода слов в поля
 def on_validate_input(P):
@@ -28,6 +35,11 @@ def check_entries_filled(ini_entries):
             return False
     return True
 
+
+
+
+
+
 #Создание рабочего окна приложения
 
 root = tk.Tk()
@@ -37,6 +49,36 @@ root.geometry('800x400+400+200')
 root.iconbitmap(default='Ico_2.ico')
 root.resizable(False, False)
 validate_input = root.register(on_validate_input)
+root.option_add("*tearOff", False)
+
+
+def Help():
+    window = tk.Tk()
+    window.title("Помощь")
+    window.geometry("800x400")
+    window.resizable(False, True)
+    text_label = tk.Label(window, justify="left", wraplength=400)
+    text_label.pack(padx=20, pady=20, anchor='w')
+    with open('Инструкция.txt', "r", encoding="utf-8") as file:
+        content = file.read()
+        text_label.config(text=content)
+    current_dir = os.path.dirname(__file__)
+    image_path = os.path.join(current_dir, "Crossection.png")
+    pil_image = Image.open(image_path)
+    image = ImageTk.PhotoImage(pil_image)
+    image_label = tk.Label(window, image=image)
+    image_label.pack()
+
+main_menu = tk.Menu()
+root.config(menu=main_menu)
+file_menu = tk.Menu()
+file_menu.add_command(label="Новый")
+file_menu.add_command(label="Сохранить")
+file_menu.add_command(label="Открыть")
+file_menu.add_separator()
+file_menu.add_command(label="Выйти", command=quit_mainloop)
+main_menu.add_cascade(label="Файл", menu=file_menu)
+main_menu.add_cascade(label="Помощь", command=Help)
 
 #Рамки с исходными данными и результатами
 
@@ -217,6 +259,7 @@ def Clc_t_and_s_value(event):
     Chek = (Jx == Jx_ult)
     # Цикл подбора толщин по исходному моменту инерции
     n = 0
+
     while Chek == False:
         if n == 10000000:
             clear_post([result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl])
@@ -330,8 +373,7 @@ clear_button = tk.Button(ini_frame, text="Очистить поля", command=la
                                                                                         [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins],
                                                                                         [outside_combox, inside_combox]), bg= 'Coral1')
 clear_button.grid(row=14, column=0, sticky='w',pady=40, padx=60)
-pb = ttk.Progressbar(ini_frame, length=150)
-pb.grid(row=14, column=1, sticky='w')
+
 
 
 root.mainloop()
