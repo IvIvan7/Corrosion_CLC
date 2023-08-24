@@ -2,9 +2,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import re
 from tkinter import messagebox
-from tkinter import PhotoImage
 import os
-from PIL import Image, ImageTk
+import subprocess
 
 #Функция завершающая программу
 def quit_mainloop():
@@ -51,23 +50,12 @@ root.resizable(False, False)
 validate_input = root.register(on_validate_input)
 root.option_add("*tearOff", False)
 
+current_dir = os.path.dirname(__file__)
+file_path = os.path.join(current_dir, "Инструкция.docx")
 
 def Help():
-    window = tk.Tk()
-    window.title("Помощь")
-    window.geometry("800x400")
-    window.resizable(False, True)
-    text_label = tk.Label(window, justify="left", wraplength=400)
-    text_label.pack(padx=20, pady=20, anchor='w')
-    with open('Инструкция.txt', "r", encoding="utf-8") as file:
-        content = file.read()
-        text_label.config(text=content)
-    current_dir = os.path.dirname(__file__)
-    image_path = os.path.join(current_dir, "Crossection.png")
-    pil_image = Image.open(image_path)
-    image = ImageTk.PhotoImage(pil_image)
-    image_label = tk.Label(window, image=image)
-    image_label.pack()
+    subprocess.Popen(["start", "WINWORD.EXE", file_path], shell=True)
+
 
 main_menu = tk.Menu()
 root.config(menu=main_menu)
