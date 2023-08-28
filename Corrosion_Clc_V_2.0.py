@@ -14,14 +14,16 @@ def on_validate_input(P):
     return re.match(r'^\d*\.?\d*$', P) is not None
 
 #Функция очистки рабочего пространства
-def clear_entries(entries, labeles, comboboxes):
+def clear_entries(entries, labeles, comboboxes, conds):
     for entry in entries:
         entry.delete(0, tk.END)
     for labele in labeles:
         labele.config(text="")
     for combobox in comboboxes:
         combobox.set('')
-
+    for cond in conds:
+        cond.config(state='disabled')
+    age_entry.focus()
 def clear_post(labels):
     for label in labels:
         label.config(text="")
@@ -33,10 +35,6 @@ def check_entries_filled(ini_entries):
             messagebox.showerror("Ошибка", "Заполните все поля")
             return False
     return True
-
-
-
-
 
 
 #Создание рабочего окна приложения
@@ -60,10 +58,6 @@ def Help():
 main_menu = tk.Menu()
 root.config(menu=main_menu)
 file_menu = tk.Menu()
-file_menu.add_command(label="Новый")
-file_menu.add_command(label="Сохранить")
-file_menu.add_command(label="Открыть")
-file_menu.add_separator()
 file_menu.add_command(label="Выйти", command=quit_mainloop)
 main_menu.add_cascade(label="Файл", menu=file_menu)
 main_menu.add_cascade(label="Помощь", command=Help)
@@ -84,13 +78,23 @@ def calc_age(event):
     now_year = today.year
     age = now_year - bld_year
     d = age % 10
-    if d == 1 and age != 11:
-        k =  ' год'
-    elif age >= 5 and age <= 20:
-        k =  ' лет'
-    else:
+    e = age % 100
+    if e >= 11 and e <= 20:
+        k = ' лет'
+    elif d >= 2 and d <= 4:
         k =  ' года'
-    age_res_lbl.config(text=f'Возраст тоннеля: {age} {k}')
+    elif  d <= 1:
+        k = ' год'
+    else:
+        k =  ' лет'
+    if age < 0 and bld_year > now_year:
+        messagebox.showerror("Ошибка", "Проверьте возраст тоннеля")
+        age_entry.delete(0, tk.END)
+        pass
+    else:
+        age_res_lbl.config(text=f'Возраст тоннеля: {age} {k}')
+
+
     return age
 
 #Интерфейс расчета возраста тоннеля
@@ -150,6 +154,8 @@ def on_outcomb_selected(event):
         cond_outs_ent.focus()
         cond_outs_ent.delete(0, tk.END)
     else:
+        cond_outs_ent.delete(0, tk.END)
+        cond_outs_ent.config(state='disabled')
         result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
 
 
@@ -213,6 +219,9 @@ def on_inscomb_selected(event):
         cond_ins_ent.delete(0, tk.END)
     else:
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
+        cond_ins_ent.delete(0, tk.END)
+        cond_ins_ent.config(state='disabled')
+
 
 
 # Интерфейс выпадающего списка внешней среды
@@ -357,9 +366,10 @@ result_Fn_lbl.grid(row=13, column=0, sticky='w')
 #Кнопки
 clc_but = tk.Button(ini_frame, text='Расчет', command=submit_form, bg= '#76EE00')
 clc_but.grid(row=14, column=0, sticky='w',pady=40, padx=5)
-clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent],
+clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent, cond_ins_ent, cond_outs_ent],
                                                                                         [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins],
-                                                                                        [outside_combox, inside_combox]), bg= 'Coral1')
+                                                                                        [outside_combox, inside_combox],
+                                                                                        [cond_outs_ent, cond_ins_ent]), bg= 'Coral1')
 clear_button.grid(row=14, column=0, sticky='w',pady=40, padx=60)
 
 
