@@ -51,6 +51,10 @@ def open_table():
     table_path = os.path.join(current_dir, "Table.png")
     subprocess.Popen(["start",'Photo Viewer.exe', table_path], shell=True)
 
+def new_proj():
+    table_path = os.path.join(current_dir, "Corrosion_Clc_V_2.0.exe")
+    subprocess.Popen(["start", '', table_path], shell=True)
+
 #Создание рабочего окна приложения
 
 root = tk.Tk()
@@ -63,15 +67,16 @@ validate_input = root.register(on_validate_input)
 root.option_add("*tearOff", False)
 
 current_dir = os.path.dirname(__file__)
-file_path = os.path.join(current_dir, "Инструкция.docx")
+file_path = os.path.join(current_dir, "Инструкция.pdf")
 
 def Help():
-    subprocess.Popen(["start", "WINWORD.EXE", file_path], shell=True)
+    subprocess.Popen(["start", '', file_path], shell=True)
 
 
 main_menu = tk.Menu()
 root.config(menu=main_menu)
 file_menu = tk.Menu()
+file_menu.add_command(label="Создать", command=new_proj)
 file_menu.add_command(label="Выйти", command=quit_mainloop)
 main_menu.add_cascade(label="Файл", menu=file_menu)
 main_menu.add_cascade(label="Помощь", command=Help)
