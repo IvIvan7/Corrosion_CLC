@@ -4,6 +4,8 @@ import re
 from tkinter import messagebox
 import os
 import subprocess
+from tkinter import filedialog
+from datetime import date
 
 #Функция завершающая программу
 def quit_mainloop():
@@ -36,13 +38,22 @@ def check_entries_filled(ini_entries):
             return False
     return True
 
+def save_file():
+    wr_result = clc_new_geom(0)
+    filepath = filedialog.asksaveasfilename()
+    filep = filepath + '.txt'
+    if filepath != "":
+        with open(filep, "w") as file:
+            file.write(wr_result)
+            subprocess.Popen(['notepad.exe', filep])
+
 
 #Создание рабочего окна приложения
 
 root = tk.Tk()
 root['bg'] = '#fafafa'
 root.title('Расчет геометрических параметров тюбингов с коррозией')
-root.geometry('800x400+400+200')
+root.geometry('840x400+400+200')
 root.iconbitmap(default='Ico_2.ico')
 root.resizable(False, False)
 validate_input = root.register(on_validate_input)
@@ -67,13 +78,14 @@ main_menu.add_cascade(label="Помощь", command=Help)
 ini_frame = tk.LabelFrame(master=root, relief='ridge',bd=2, pady=10, padx=3, text='Исходные данные')
 ini_frame.place(width=400, height=400, x=0, y=0)
 post_frame = tk.LabelFrame(master=root, relief='ridge', bd=2, pady=10, padx=3, text='Результаты расчета')
-post_frame.place(width=400, height=400, x=400, y=0)
+post_frame.place(width=440, height=400, x=400, y=0)
+separator = ttk.Separator(post_frame, orient="horizontal")
+separator.grid(row = 10, column = 0, sticky="ew", pady = 5)
 
 #Функция расчета возраста тоннеля
 
 def calc_age(event):
     bld_year = int(float(age_entry.get()))
-    from datetime import date
     today = date.today()
     now_year = today.year
     age = now_year - bld_year
@@ -94,8 +106,7 @@ def calc_age(event):
     else:
         age_res_lbl.config(text=f'Возраст тоннеля: {age} {k}')
 
-
-    return age
+    return age, now_year, k
 
 #Интерфейс расчета возраста тоннеля
 
@@ -281,18 +292,19 @@ def Clc_t_and_s_value(event):
     else:
         result_t_lbl.config(text=f'Толщина ребра блока t: {round(t ,2)} мм')
         result_s_lbl.config(text=f'Толщина спинки блока s: {round(s ,2)} мм')
-        result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см^4')
-        return s, t
+        result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см⁴')
+        return s, t, Jx
 
 
 def clc_new_geom(event):
     H = float(H_ent.get())
     B = float(B_ent.get())
-    s, t = Clc_t_and_s_value(event)
+    s, t, Jx = Clc_t_and_s_value(event)
+    age, now_year, k = calc_age(event)
     value_outs = outside_the_lining[outside_combox.get()]
-    losses_outside = calc_age(event) * value_outs
+    losses_outside = age * value_outs
     value_ins = inside_the_lining[inside_combox.get()]
-    losses_inside = calc_age(event) * value_ins
+    losses_inside = age * value_ins
     Hn = H - losses_outside - losses_inside
     Bn = B
     tn = t - losses_inside
@@ -302,14 +314,35 @@ def clc_new_geom(event):
     x2n = Hn - x1n
     # Расчет нового момента инерции
     Jxn = (((Bn * (x1n ** 3)) - ((Bn - 2 * tn) * ((x1n - sn) ** 3)) + (2 * tn * (x2n ** 3))) / 3) / 10000
-    result_Jxn_lbl.config(text=f'Момент инерции ржавого блока: {round(Jxn, 2)} мм')
+    result_Jxn_lbl.config(text=f'Момент инерции ржавого блока: {round(Jxn, 2)} см⁴')
     # Расчет моментов сопротивления
     Wminn = Jxn / (x2n / 10)
     Wmaxn = Jxn / (x1n / 10)
-    result_Wmin_lbl.config(text=f'Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} мм')
-    result_Wmax_lbl.config(text=f'Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} мм')
+    result_Wmin_lbl.config(text=f'Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} см³')
+    result_Wmax_lbl.config(text=f'Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} см³')
     Fn = (Bn * sn + 2 * ((Hn - sn) * tn)) / 100
-    result_Fn_lbl.config(text=f'Площадь поперечного сечения ржавого блока: {round(Fn, 2)} мм')
+    result_Fn_lbl.config(text=f'Площадь поперечного сечения ржавого блока: {round(Fn, 2)} см²')
+    doc_but.config(state='normal')
+    wr_result = f'''    Особенностью, принятой в расчете, для материала чугуна является учет коррозии. Толщина слоя, подвергнувшаяся коррозионному воздействию, рассчитывалась согласно таблице, представленной на Рис.
+    Исходные данные для расчета:
+Высота блока H: {round(H ,2)} мм;
+Ширина блока B: {round(B ,2)} мм;
+Толщина ребра блока t: {round(t ,2)} мм;
+Толщина спинки блока s: {round(s ,2)} мм;
+Момент инерции блока Jx: {round(Jx, 2)} см^4
+    Порядок расчета:
+1. Вычисление возраста тоннеля: 
+Текущий год – Год строительства = {now_year} - {age_entry.get()} = {age} {k}
+2. Вычисление величины коррозионного слоя на внутренней части тюбинга:
+Потери металла * Возраст тоннеля = {value_ins} * {age} = {round(losses_inside,3)} мм
+3. Вычисление величины коррозионного слоя на внешней части тюбинга:
+Потери металла * Возраст = {value_outs} * {age} = {round(losses_outside,3)} мм
+Геометрические характеристики чугунных тюбингов с учетом коррозионного воздействия:
+Момент инерции ржавого блока: {round(Jxn, 2)} см^4
+Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} см^3
+Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} см^3
+Площадь поперечного сечения ржавого блока: {round(Fn, 2)} см^2'''
+    return wr_result
 
 
 def submit_form():
@@ -354,23 +387,25 @@ result_s_lbl.grid(row=8, column=0, sticky='w')
 result_Jx_lbl = tk.Label(post_frame, text='')
 result_Jx_lbl.grid(row=9, column=0, sticky='w')
 result_Jxn_lbl = tk.Label(post_frame, text='')
-result_Jxn_lbl.grid(row=10, column=0, sticky='w')
+result_Jxn_lbl.grid(row=11, column=0, sticky='w')
 result_Wmax_lbl = tk.Label(post_frame, text='')
-result_Wmax_lbl.grid(row=11, column=0, sticky='w')
+result_Wmax_lbl.grid(row=12, column=0, sticky='w')
 result_Wmin_lbl = tk.Label(post_frame, text='')
-result_Wmin_lbl.grid(row=12, column=0, sticky='w')
+result_Wmin_lbl.grid(row=13, column=0, sticky='w')
 result_Fn_lbl = tk.Label(post_frame, text='')
-result_Fn_lbl.grid(row=13, column=0, sticky='w')
+result_Fn_lbl.grid(row=14, column=0, sticky='nw')
 
 
 #Кнопки
-clc_but = tk.Button(ini_frame, text='Расчет', command=submit_form, bg= '#76EE00')
+clc_but = tk.Button(ini_frame, text='Расчет', command=submit_form, bg= '#63B8FF')
 clc_but.grid(row=14, column=0, sticky='w',pady=40, padx=5)
 clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent, cond_ins_ent, cond_outs_ent],
                                                                                         [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins],
                                                                                         [outside_combox, inside_combox],
-                                                                                        [cond_outs_ent, cond_ins_ent]), bg= 'Coral1')
+                                                                                        [cond_outs_ent, cond_ins_ent, doc_but]), bg= '#F08080')
 clear_button.grid(row=14, column=0, sticky='w',pady=40, padx=60)
+doc_but = tk.Button(post_frame, text='Сформировать отчет', command=save_file, bg= '#5CB274', state='disabled')
+doc_but.grid(row=14, column=0, sticky='w',pady=44, padx=5)
 
 
 
