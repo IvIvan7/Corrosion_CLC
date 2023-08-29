@@ -277,23 +277,23 @@ def Clc_t_and_s_value(event):
     n = 0
 
     while Chek == False:
-        if n == 10000000:
+        if n == 1000000000:
             clear_post([result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl])
             messagebox.showerror("Ошибка", "Проверьте правильность исходных данных")
             break
         else:
             if Jx < Jx_ult:
-                t = t + 0.0000001
-                s = s + 0.0000001
+                t = t + 0.000001
+                s = s + 0.000001
             else:
-                t = t - 0.0000001
-                s = s - 0.0000001
+                t = t - 0.000001
+                s = s - 0.000001
         x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
         x2 = H - x1
         Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
         n= n+1
-        Chek = (round(Jx, 4) == Jx_ult)
-    if n == 10000000:
+        Chek = (round(Jx, 3) == Jx_ult)
+    if n == 1000000000:
         clear_post(
             [result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl,
              result_Wmax_lbl, result_Fn_lbl])
@@ -328,7 +328,7 @@ def clc_new_geom(event):
     Wmaxn = Jxn / (x1n / 10)
     result_Wmin_lbl.config(text=f'Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} см³')
     result_Wmax_lbl.config(text=f'Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} см³')
-    Fn = (Bn * sn + 2 * ((Hn - sn) * tn)) / 100
+    Fn = Jxn/((0.29*(Hn/10))**2)
     result_Fn_lbl.config(text=f'Площадь поперечного сечения ржавого блока: {round(Fn, 2)} см²')
     doc_but.config(state='normal')
     wr_result = f'''    Особенностью, принятой в расчете, для материала чугуна является учет коррозии. Толщина слоя, подвергнувшаяся коррозионному воздействию, рассчитывалась согласно таблице, представленной на Рис.
@@ -370,7 +370,7 @@ t_lbl = tk.Label(ini_frame, text='Толщина ребра блока t (мм):
 t_lbl.grid(row=8, column=0, sticky='w')
 s_lbl = tk.Label(ini_frame, text='Толщина спинки блока s (мм):')
 s_lbl.grid(row=9, column=0, sticky='w')
-Jx_lbl = tk.Label(ini_frame, text='Момент инерции блока (см^4):')
+Jx_lbl = tk.Label(ini_frame, text='Момент инерции блока нетто (см⁴):')
 Jx_lbl.grid(row=10, column=0, sticky='w')
 H_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 H_ent.grid(row=6, column=1, sticky='w')
