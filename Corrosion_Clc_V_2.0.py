@@ -57,7 +57,7 @@ root = tk.Tk()
 root['bg'] = '#fafafa'
 root.title('Расчет геометрических параметров тюбингов с коррозией')
 root.geometry('840x400+400+200')
-root.iconbitmap(default='Ico_2.ico')
+root.iconbitmap(default='Ico.ico')
 root.resizable(False, False)
 validate_input = root.register(on_validate_input)
 root.option_add("*tearOff", False)
