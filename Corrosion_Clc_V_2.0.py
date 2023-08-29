@@ -47,6 +47,9 @@ def save_file():
             file.write(wr_result)
             subprocess.Popen(['notepad.exe', filep])
 
+def open_table():
+    table_path = os.path.join(current_dir, "Table.png")
+    subprocess.Popen(["start",'Photo Viewer.exe', table_path], shell=True)
 
 #Создание рабочего окна приложения
 
@@ -406,7 +409,8 @@ clear_button = tk.Button(ini_frame, text="Очистить поля", command=la
 clear_button.grid(row=14, column=0, sticky='w',pady=40, padx=60)
 doc_but = tk.Button(post_frame, text='Сформировать отчет', command=save_file, bg= '#5CB274', state='disabled')
 doc_but.grid(row=14, column=0, sticky='w',pady=44, padx=5)
-
+table_but = tk.Button(post_frame,text='Открыть таблицу для копирования', command=open_table, bg= '#e9c46a')
+table_but.grid(row=14, column=0, sticky='w',pady=44, padx=140)
 
 
 root.mainloop()
