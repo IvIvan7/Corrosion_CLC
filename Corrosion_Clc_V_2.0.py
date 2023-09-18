@@ -60,7 +60,7 @@ def new_proj():
 root = tk.Tk()
 root['bg'] = '#fafafa'
 root.title('Расчет геометрических параметров тюбингов с коррозией')
-root.geometry('840x400+400+200')
+root.geometry('840x500+400+200')
 root.iconbitmap(default='Ico.ico')
 root.resizable(False, False)
 validate_input = root.register(on_validate_input)
@@ -76,19 +76,23 @@ def Help():
 main_menu = tk.Menu()
 root.config(menu=main_menu)
 file_menu = tk.Menu()
+help_menu = tk.Menu()
 file_menu.add_command(label="Создать", command=new_proj)
 file_menu.add_command(label="Выйти", command=quit_mainloop)
 main_menu.add_cascade(label="Файл", menu=file_menu)
-main_menu.add_cascade(label="Помощь", command=Help)
+main_menu.add_cascade(label="Помощь", menu=help_menu)
+help_menu.add_command(label="Инструкция", command=Help)
+help_menu.add_command(label="Таблица из справочника", command=open_table)
+
 
 #Рамки с исходными данными и результатами
 
 ini_frame = tk.LabelFrame(master=root, relief='ridge',bd=2, pady=10, padx=3, text='Исходные данные')
-ini_frame.place(width=400, height=400, x=0, y=0)
+ini_frame.place(width=400, height=500, x=0, y=0)
 post_frame = tk.LabelFrame(master=root, relief='ridge', bd=2, pady=10, padx=3, text='Результаты расчета')
-post_frame.place(width=440, height=400, x=400, y=0)
+post_frame.place(width=440, height=500, x=400, y=0)
 separator = ttk.Separator(post_frame, orient="horizontal")
-separator.grid(row = 10, column = 0, sticky="ew", pady = 5)
+separator.grid(row = 13, column = 0, sticky="ew", pady = 5)
 
 #Функция расчета возраста тоннеля
 
@@ -268,6 +272,7 @@ def Clc_t_and_s_value(event):
     t = float(t_ent.get())
     s = float(s_ent.get())
     Jx_ult = float(Jx_ent.get())
+    Wmin, Wmax, Fx = [Wminx_ent.get(), Wmaxx_ent.get(), Fx_ent.get()]
     x1 = ((2 * t * H ** 2) + ((B - 2 * t) * s ** 2)) / (2 * ((2 * t * H) + (B - 2 * t) * s))
     x2 = H - x1
     Jx = (((B * (x1 ** 3)) - ((B - 2 * t) * ((x1 - s) ** 3)) + (2 * t * (x2 ** 3))) / 3) / 10000
@@ -278,7 +283,7 @@ def Clc_t_and_s_value(event):
 
     while Chek == False:
         if n == 1000000000:
-            clear_post([result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl])
+            clear_post([result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wminn_lbl, result_Wmaxn_lbl, result_Fnn_lbl])
             messagebox.showerror("Ошибка", "Проверьте правильность исходных данных")
             break
         else:
@@ -295,18 +300,23 @@ def Clc_t_and_s_value(event):
         Chek = (round(Jx, 3) == Jx_ult)
     if n == 1000000000:
         clear_post(
-            [result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl,
-             result_Wmax_lbl, result_Fn_lbl])
+            [result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wminn_lbl,
+             result_Wmaxn_lbl, result_Fnn_lbl])
     else:
         result_t_lbl.config(text=f'Толщина ребра блока t: {round(t ,2)} мм')
         result_s_lbl.config(text=f'Толщина спинки блока s: {round(s ,2)} мм')
         result_Jx_lbl.config(text=f'Момент инерции блока Jx: {round(Jx, 2)} см⁴')
+        result_Wmaxx_lbl.config(text=f'Максимальный момент сопротивления блока нетто: {Wmax} см³')
+        result_Wminx_lbl.config(text=f'Минимальный момент сопротивления блока нетто: {Wmin} см³')
+        result_Fx_lbl.config(text=f'Площадь поперечного сечения блока брутто: {Fx} см²')
+
         return s, t, Jx
 
 
 def clc_new_geom(event):
     H = float(H_ent.get())
     B = float(B_ent.get())
+    Wmin, Wmax, Fx = [Wminx_ent.get(), Wmaxx_ent.get(), Fx_ent.get()]
     s, t, Jx = Clc_t_and_s_value(event)
     age, now_year, k = calc_age(event)
     value_outs = outside_the_lining[outside_combox.get()]
@@ -326,10 +336,13 @@ def clc_new_geom(event):
     # Расчет моментов сопротивления
     Wminn = Jxn / (x2n / 10)
     Wmaxn = Jxn / (x1n / 10)
-    result_Wmin_lbl.config(text=f'Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} см³')
-    result_Wmax_lbl.config(text=f'Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} см³')
-    Fn = Jxn/((0.29*(Hn/10))**2)
-    result_Fn_lbl.config(text=f'Площадь поперечного сечения ржавого блока: {round(Fn, 2)} см²')
+    result_Wminn_lbl.config(text=f'Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} см³')
+    result_Wmaxn_lbl.config(text=f'Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} см³')
+    Ftest = (2 * H * t) + ((B - 2 * t) * s)
+    Fntest = (2 * Hn * tn) + ((Bn - 2 * tn) * sn)
+    delta = Fntest/Ftest
+    Fnn = float(Fx)*delta
+    result_Fnn_lbl.config(text=f'Площадь поперечного сечения ржавого блока: {round(Fnn, 2)} см²')
     doc_but.config(state='normal')
     wr_result = f'''    Особенностью, принятой в расчете, для материала чугуна является учет коррозии. Толщина слоя, подвергнувшаяся коррозионному воздействию, рассчитывалась согласно требованиям СП 28.13330.2017 «СНиП 2.03.11-85 Защита строительных конструкций от коррозии» и таблицы справочника по чугунному литью [1], представленной на Рис.
     Исходные данные для расчета:
@@ -337,7 +350,10 @@ def clc_new_geom(event):
 Ширина блока B: {round(B ,2)} мм;
 Толщина ребра блока t: {round(t ,2)} мм;
 Толщина спинки блока s: {round(s ,2)} мм;
-Момент инерции блока Jx: {round(Jx, 2)} см^4
+Момент инерции блока нетто Jx: {round(Jx, 2)} см^4
+Минимальный момент сопротивления блока нетто Wmin: {Wmin} см^3
+Максимальный момент сопротивления блока нетто Wmax: {Wmax} см^3
+Площадь поперечного сечения блока брутто Fx: {Fx} см^2
     Порядок расчета:
 1. Вычисление возраста тоннеля: 
 Текущий год – Год строительства = {now_year} - {age_entry.get()} = {age} {k}
@@ -349,14 +365,15 @@ def clc_new_geom(event):
 Момент инерции ржавого блока: {round(Jxn, 2)} см^4
 Минимальный момент сопротивления ржавого блока: {round(Wminn, 2)} см^3
 Максимальный момент сопротивления ржавого блока: {round(Wmaxn, 2)} см^3
-Площадь поперечного сечения ржавого блока: {round(Fn, 2)} см^2
+Площадь поперечного сечения ржавого блока: {round(Fnn, 2)} см^2
 
+    Библиографический список:
 1. Гиршович, Н. Г. Справочник по чугунному литью / Н. Г. Гиршович. – Издание 3-е, переработанное и дополненное. – Ленинград : "Машиностроение", 1978. – 758 с.'''
     return wr_result
 
 
 def submit_form():
-    entry_list = [age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent, inside_combox, outside_combox]
+    entry_list = [age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent, inside_combox, outside_combox, Wminx_ent, Wmaxx_ent, Fx_ent]
     if check_entries_filled(entry_list):
         clc_new_geom(0)
         pass
@@ -374,16 +391,28 @@ s_lbl = tk.Label(ini_frame, text='Толщина спинки блока s (мм
 s_lbl.grid(row=9, column=0, sticky='w')
 Jx_lbl = tk.Label(ini_frame, text='Момент инерции блока нетто (см⁴):')
 Jx_lbl.grid(row=10, column=0, sticky='w')
+Wminx_lbl = tk.Label(ini_frame, text='Минимальный момент \n сопротивления блока нетто (см³):', justify="left")
+Wminx_lbl.grid(row=11, column=0, sticky='w')
+Wmaxx_lbl = tk.Label(ini_frame, text='Максимальный момент \n сопротивления блока нетто (см³):', justify="left")
+Wmaxx_lbl.grid(row=12, column=0, sticky='w')
+Fx_lbl = tk.Label(ini_frame, text='Площадь поперечного \n сечения блока брутто (см²):', justify="left")
+Fx_lbl.grid(row=13, column=0, sticky='w')
 H_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
-H_ent.grid(row=6, column=1, sticky='w')
+H_ent.grid(row=6, column=1, sticky='w', pady = 8)
 B_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 B_ent.grid(row=7, column=1, sticky='w')
 t_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
-t_ent.grid(row=8, column=1, sticky='w')
+t_ent.grid(row=8, column=1, sticky='w', pady = 8)
 s_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
 s_ent.grid(row=9, column=1, sticky='w')
 Jx_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
-Jx_ent.grid(row=10, column=1, sticky='w')
+Jx_ent.grid(row=10, column=1, sticky='w', pady = 8)
+Wminx_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
+Wminx_ent.grid(row=11, column=1, sticky='sw')
+Wmaxx_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
+Wmaxx_ent.grid(row=12, column=1, sticky='sw')
+Fx_ent = tk.Entry(ini_frame, width=10, bg="white", validate="key", validatecommand=(validate_input, "%P"))
+Fx_ent.grid(row=13, column=1, sticky='sw')
 result_geom_lbl = tk.Label(post_frame, text='Геометрические параметры блока обделки:')
 result_geom_lbl.grid(row=4, column=0, sticky='w', columnspan=2)
 result_H_lbl = tk.Label(post_frame, text='')
@@ -396,28 +425,34 @@ result_s_lbl = tk.Label(post_frame, text='')
 result_s_lbl.grid(row=8, column=0, sticky='w')
 result_Jx_lbl = tk.Label(post_frame, text='')
 result_Jx_lbl.grid(row=9, column=0, sticky='w')
+result_Wminx_lbl = tk.Label(post_frame, text='')
+result_Wminx_lbl.grid(row=10, column=0, sticky='w')
+result_Wmaxx_lbl = tk.Label(post_frame, text='')
+result_Wmaxx_lbl.grid(row=11, column=0, sticky='w')
+result_Fx_lbl = tk.Label(post_frame, text='')
+result_Fx_lbl.grid(row=12, column=0, sticky='w')
+
 result_Jxn_lbl = tk.Label(post_frame, text='')
-result_Jxn_lbl.grid(row=11, column=0, sticky='w')
-result_Wmax_lbl = tk.Label(post_frame, text='')
-result_Wmax_lbl.grid(row=12, column=0, sticky='w')
-result_Wmin_lbl = tk.Label(post_frame, text='')
-result_Wmin_lbl.grid(row=13, column=0, sticky='w')
-result_Fn_lbl = tk.Label(post_frame, text='')
-result_Fn_lbl.grid(row=14, column=0, sticky='nw')
+result_Jxn_lbl.grid(row=14, column=0, sticky='w')
+result_Wmaxn_lbl = tk.Label(post_frame, text='')
+result_Wmaxn_lbl.grid(row=15, column=0, sticky='w')
+result_Wminn_lbl = tk.Label(post_frame, text='')
+result_Wminn_lbl.grid(row=16, column=0, sticky='w')
+result_Fnn_lbl = tk.Label(post_frame, text='')
+result_Fnn_lbl.grid(row=17, column=0, sticky='nw')
 
 
 #Кнопки
 clc_but = tk.Button(ini_frame, text='Расчет', command=submit_form, bg= '#63B8FF')
-clc_but.grid(row=14, column=0, sticky='w',pady=40, padx=5)
-clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent, cond_ins_ent, cond_outs_ent],
-                                                                                        [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wmin_lbl, result_Wmax_lbl, result_Fn_lbl, result_label_outs, result_label_ins],
+clc_but.grid(row=14, column=0, sticky='w',pady=15, padx=5)
+clear_button = tk.Button(ini_frame, text="Очистить поля", command=lambda: clear_entries([age_entry, H_ent, B_ent, s_ent, t_ent, Jx_ent, cond_ins_ent, cond_outs_ent, Wminx_ent, Wmaxx_ent, Fx_ent],
+                                                                                        [age_res_lbl, result_H_lbl, result_B_lbl, result_t_lbl, result_s_lbl, result_Jx_lbl, result_Jxn_lbl, result_Wminn_lbl, result_Wmaxn_lbl, result_Fnn_lbl, result_label_outs, result_label_ins, result_Wminx_lbl, result_Wmaxx_lbl, result_Fx_lbl],
                                                                                         [outside_combox, inside_combox],
                                                                                         [cond_outs_ent, cond_ins_ent, doc_but]), bg= '#F08080')
-clear_button.grid(row=14, column=0, sticky='w',pady=40, padx=60)
+clear_button.grid(row=14, column=0, sticky='w',pady=15, padx=60)
 doc_but = tk.Button(post_frame, text='Сформировать отчет', command=save_file, bg= '#5CB274', state='disabled')
-doc_but.grid(row=14, column=0, sticky='w',pady=44, padx=5)
-table_but = tk.Button(post_frame,text='Открыть таблицу для копирования', command=open_table, bg= '#e9c46a')
-table_but.grid(row=14, column=0, sticky='w',pady=44, padx=140)
+doc_but.grid(row=18, column=0, sticky='w',pady=35, padx=5)
+
 
 
 root.mainloop()
