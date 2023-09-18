@@ -47,6 +47,33 @@ def save_file():
             file.write(wr_result)
             subprocess.Popen(['notepad.exe', filep])
 
+#Функция сохраниения и открытия прогресса
+def save_data():
+    data = [age_entry.get(), cond_outs_ent.get(), cond_ins_ent.get(), H_ent.get(), B_ent.get(), s_ent.get(), t_ent.get(), Jx_ent.get(), Wminx_ent.get(), Wmaxx_ent.get(), Fx_ent.get()]
+    selected_option1 = outside_combox.get()
+    selected_option2 = inside_combox.get()
+    file_path = filedialog.asksaveasfilename(defaultextension=".clc", filetypes=[("CLC Files", "*.clc")])
+    if file_path:
+        with open(file_path, 'w') as file:
+            file.write(f"Option 1: {selected_option1}\n")
+            file.write(f"Option 2: {selected_option2}\n")
+            for item in data:
+                file.write(item + '\n')
+
+
+def load_data():
+    file_path = filedialog.askopenfilename(filetypes=[("CLC Files", "*.clc")])
+    if file_path:
+        with open(file_path, 'r') as file:
+            data = file.read().splitlines()
+
+            outside_combox.set(data[0].split(": ")[1] if len(data) > 0 else '')
+            inside_combox.set(data[1].split(": ")[1] if len(data) > 1 else '')
+
+            for i, entry in enumerate([age_entry, cond_outs_ent, cond_ins_ent, H_ent, B_ent, s_ent, t_ent, Jx_ent,  Wminx_ent, Wmaxx_ent, Fx_ent], start=2):
+                entry.delete(0, tk.END)
+                entry.insert(0, data[i] if i < len(data) else '')
+
 def open_table():
     table_path = os.path.join(current_dir, "Table.png")
     subprocess.Popen(["start",'Photo Viewer.exe', table_path], shell=True)
@@ -78,6 +105,8 @@ root.config(menu=main_menu)
 file_menu = tk.Menu()
 help_menu = tk.Menu()
 file_menu.add_command(label="Создать", command=new_proj)
+file_menu.add_command(label="Сохранить", command=save_data)
+file_menu.add_command(label="Открыть", command=load_data)
 file_menu.add_command(label="Выйти", command=quit_mainloop)
 main_menu.add_cascade(label="Файл", menu=file_menu)
 main_menu.add_cascade(label="Помощь", menu=help_menu)
@@ -142,8 +171,8 @@ outside_the_lining = {
         'Атмосфера, обогащенная SO2': 0.79,
         'Вода морская, спокойная': 0.125,
         'Вода морская (скорость течения 6-10 м/с)': 1.25,
-        'Почва (ρ=200…1000 Ом*см)': 0.06,
-        'Почва (ρ=1000…2000 Ом*см)': 0.03
+        'Почва (p=200…1000 Ом*см)': 0.06,
+        'Почва (p=1000…2000 Ом*см)': 0.03
     }
 
 outside_keys_list = list(outside_the_lining.keys())
@@ -164,13 +193,13 @@ def proc_out(event):
 
 def on_outcomb_selected(event):
     selected_value_outs = outside_combox.get()
-    if selected_value_outs == 'Почва (ρ=200…1000 Ом*см)':
+    if selected_value_outs == 'Почва (p=200…1000 Ом*см)':
         outside_the_lining[selected_value_outs] = 0.06
         result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
         cond_outs_ent.config(state='normal')
         cond_outs_ent.focus()
         cond_outs_ent.delete(0, tk.END)
-    elif selected_value_outs == 'Почва (ρ=1000…2000 Ом*см)':
+    elif selected_value_outs == 'Почва (p=1000…2000 Ом*см)':
         outside_the_lining[selected_value_outs] = 0.03
         result_label_outs.config(text=f'Внешняя среда: {selected_value_outs} | {outside_the_lining[selected_value_outs]} мм/год')
         cond_outs_ent.config(state='normal')
@@ -198,6 +227,7 @@ cond_outs_ent.bind('<FocusOut>', proc_out)
 outside_combox.bind('<<ComboboxSelected>>', on_outcomb_selected)
 
 
+
 # Внутренняя среда
 
 #Перечень исходных параметров из таблиц для расчёта
@@ -207,8 +237,8 @@ inside_the_lining = {
         'Атмосфера, обогащенная SO2': 0.79,
         'Вода морская, спокойная': 0.125,
         'Вода морская (скорость течения 6-10 м/с)': 1.25,
-        'Почва (ρ=200…1000 Ом*см)': 0.06,
-        'Почва (ρ=1000…2000 Ом*см)': 0.03
+        'Почва (p=200…1000 Ом*см)': 0.06,
+        'Почва (p=1000…2000 Ом*см)': 0.03
     }
 
 inside_keys_list = list(inside_the_lining.keys())
@@ -216,7 +246,7 @@ inside_keys_list = list(inside_the_lining.keys())
 def proc_ins(event):
     selected_value_ins = inside_combox.get()
     cond_ins = int(float(cond_ins_ent.get()))
-    if selected_value_ins == 'Почва (ρ=200…1000 Ом*см)':
+    if selected_value_ins == 'Почва (p=200…1000 Ом*см)':
         x = 0.13 + ((0.06 - 0.13) / (200 - 1000)) * (cond_ins - 1000)
         inside_the_lining[selected_value_ins] = round(x ,4)
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {inside_the_lining[selected_value_ins]} мм/год')
@@ -228,13 +258,13 @@ def proc_ins(event):
 
 def on_inscomb_selected(event):
     selected_value_ins = inside_combox.get()
-    if selected_value_ins == 'Почва (ρ=200…1000 Ом*см)':
+    if selected_value_ins == 'Почва (p=200…1000 Ом*см)':
         inside_the_lining[selected_value_ins] = 0.06
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
         cond_ins_ent.config(state='normal')
         cond_ins_ent.focus()
         cond_ins_ent.delete(0, tk.END)
-    elif selected_value_ins == 'Почва (ρ=1000…2000 Ом*см)':
+    elif selected_value_ins == 'Почва (p=1000…2000 Ом*см)':
         inside_the_lining[selected_value_ins] = 0.03
         result_label_ins.config(text=f'Внутренняя среда: {selected_value_ins} | {outside_the_lining[selected_value_ins]} мм/год')
         cond_ins_ent.config(state='normal')
